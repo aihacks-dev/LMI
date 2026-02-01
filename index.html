@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Local Market Intelligence</title>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">Local Market Intelligence</div>
+      <div class="brand-sub">Gold & Silver Arbitrage • Local-first PWA</div>
+    </div>
+    <div class="status">
+      <span id="netBadge" class="badge">…</span>
+      <button id="btnExport" class="btn btn-ghost" title="Export backup JSON">Export</button>
+      <label class="btn btn-ghost" title="Import backup JSON">
+        Import<input id="fileImport" type="file" accept="application/json" hidden />
+      </label>
+      <button id="btnReset" class="btn btn-danger" title="Reset all local data">Reset</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="markets">Markets</button>
+    <button class="tab" data-tab="locations">Locations</button>
+    <button class="tab" data-tab="quotes">Quotes</button>
+    <button class="tab" data-tab="arbitrage">Arbitrage</button>
+    <button class="tab" data-tab="heatmap">Heat Map</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+
+  <main class="container">
+    <!-- DASHBOARD -->
+    <section class="panel show" id="tab-dashboard">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Quick Inputs</div>
+
+          <div class="row">
+            <label class="label">Silver Spot ($/oz)</label>
+            <input id="spotSilver" class="input" type="number" inputmode="decimal" step="0.01" />
+          </div>
+
+          <div class="row">
+            <label class="label">Gold Spot ($/oz)</label>
+            <input id="spotGold" class="input" type="number" inputmode="decimal" step="0.01" />
+          </div>
+
+          <div class="row">
+            <label class="label">Gas cost ($/mile)</label>
+            <input id="gasCost" class="input" type="number" inputmode="decimal" step="0.01" />
+          </div>
+
+          <div class="row">
+            <label class="label">Hourly value ($/hr)</label>
+            <input id="hourValue" class="input" type="number" inputmode="decimal" step="1" />
+          </div>
+
+          <div class="row">
+            <label class="label">Default Qty (units)</label>
+            <input id="defaultQty" class="input" type="number" inputmode="numeric" step="1" />
+          </div>
+
+          <div class="row">
+            <button id="btnSaveSettingsQuick" class="btn">Save</button>
+            <button id="btnGoArb" class="btn btn-ghost">Go to Arbitrage</button>
+          </div>
+
+          <div class="hint">
+            Tip: Once this loads once, it works offline. Add to Home Screen on iPad for full-screen app feel.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Today’s Snapshot</div>
+          <div id="snapshot" class="stack"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKETS -->
+    <section class="panel" id="tab-markets">
+      <div class="card">
+        <div class="card-title">Markets</div>
+        <div class="grid3">
+          <div>
+            <div class="row">
+              <label class="label">Name</label>
+              <input id="mName" class="input" placeholder="Tri-Cities TN/VA" />
+            </div>
+            <div class="row">
+              <label class="label">Radius (miles)</label>
+              <input id="mRadius" class="input" type="number" inputmode="numeric" step="1" value="75" />
+            </div>
+            <div class="row">
+              <label class="label">Typical drive time (hours)</label>
+              <input id="mDrive" class="input" type="number" inputmode="decimal" step="0.25" value="1.0" />
+            </div>
+            <div class="row">
+              <label class="label">Active</label>
+              <select id="mActive" class="input">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div class="row">
+              <button id="btnAddMarket" class="btn">Add Market</button>
+              <button id="btnClearMarketForm" class="btn btn-ghost">Clear</button>
+            </div>
+          </div>
+
+          <div class="colspan2">
+            <div id="marketsList" class="list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOCATIONS -->
+    <section class="panel" id="tab-locations">
+      <div class="card">
+        <div class="card-title">Locations</div>
+        <div class="grid3">
+          <div>
+            <div class="row">
+              <label class="label">Market</label>
+              <select id="lMarket" class="input"></select>
+            </div>
+            <div class="row">
+              <label class="label">Name</label>
+              <input id="lName" class="input" placeholder="Shop / Pawn / Refiner" />
+            </div>
+            <div class="row">
+              <label class="label">Type</label>
+              <select id="lType" class="input">
+                <option>LCS</option>
+                <option>Pawn</option>
+                <option>Refiner</option>
+                <option>Jeweler</option>
+                <option>Private</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="row">
+              <label class="label">City</label>
+              <input id="lCity" class="input" placeholder="Kingsport" />
+            </div>
+            <div class="row">
+              <label class="label">Distance (miles one-way)</label>
+              <input id="lDistance" class="input" type="number" inputmode="decimal" step="0.1" value="10" />
+            </div>
+            <div class="row">
+              <label class="label">Trust (1–5)</label>
+              <input id="lTrust" class="input" type="number" inputmode="numeric" step="1" min="1" max="5" value="4" />
+            </div>
+            <div class="row">
+              <label class="label">Notes</label>
+              <textarea id="lNotes" class="input" rows="3" placeholder="Pays fast, hates halves, strong on gold…"></textarea>
+            </div>
+            <div class="row">
+              <button id="btnAddLocation" class="btn">Add Location</button>
+              <button id="btnClearLocationForm" class="btn btn-ghost">Clear</button>
+            </div>
+          </div>
+
+          <div class="colspan2">
+            <div class="row">
+              <input id="locSearch" class="input" placeholder="Search locations…" />
+              <select id="locMarketFilter" class="input">
+                <option value="">All markets</option>
+              </select>
+            </div>
+            <div id="locationsList" class="list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUOTES -->
+    <section class="panel" id="tab-quotes">
+      <div class="card">
+        <div class="card-title">Quotes</div>
+
+        <div class="grid3">
+          <div>
+            <div class="row">
+              <label class="label">Location</label>
+              <select id="qLocation" class="input"></select>
+            </div>
+
+            <div class="row">
+              <label class="label">Metal</label>
+              <select id="qMetal" class="input">
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label class="label">Category</label>
+              <select id="qCategory" class="input"></select>
+            </div>
+
+            <div class="row">
+              <label class="label">Buy % of Melt (to you)</label>
+              <input id="qBuyPct" class="input" type="number" inputmode="decimal" step="0.01" placeholder="0.50 = 50%" />
+            </div>
+
+            <div class="row">
+              <label class="label">Sell % of Melt (they sell)</label>
+              <input id="qSellPct" class="input" type="number" inputmode="decimal" step="0.01" placeholder="0.95 = 95%" />
+            </div>
+
+            <div class="row">
+              <label class="label">Flat Premium ($ per unit)</label>
+              <input id="qFlat" class="input" type="number" inputmode="decimal" step="0.01" placeholder="-0.50 or +2.00" />
+            </div>
+
+            <div class="row">
+              <label class="label">Notes</label>
+              <textarea id="qNotes" class="input" rows="3" placeholder="Any special rules, caps, timing…"></textarea>
+            </div>
+
+            <div class="row">
+              <button id="btnAddQuote" class="btn">Save Quote</button>
+              <button id="btnClearQuoteForm" class="btn btn-ghost">Clear</button>
+            </div>
+
+            <div class="hint">
+              Quotes are “last-known”. You update them manually. The app then scores arbitrage automatically.
+            </div>
+          </div>
+
+          <div class="colspan2">
+            <div class="row">
+              <select id="quoteMarketFilter" class="input"></select>
+              <input id="quoteSearch" class="input" placeholder="Search quotes…" />
+            </div>
+            <div id="quotesList" class="list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARBITRAGE -->
+    <section class="panel" id="tab-arbitrage">
+      <div class="card">
+        <div class="card-title">Arbitrage Finder</div>
+
+        <div class="row">
+          <select id="arbMetal" class="input">
+            <option value="silver">Silver</option>
+            <option value="gold">Gold</option>
+          </select>
+          <select id="arbCategory" class="input"></select>
+          <input id="arbQty" class="input" type="number" inputmode="numeric" step="1" />
+          <select id="arbMarket" class="input"></select>
+          <button id="btnRunArb" class="btn">Run</button>
+        </div>
+
+        <div class="hint">
+          It finds the best “Buy from” and “Sell to” pair for the selected category, then estimates trip cost + time value.
+        </div>
+
+        <div id="arbResults" class="list"></div>
+      </div>
+    </section>
+
+    <!-- HEATMAP -->
+    <section class="panel" id="tab-heatmap">
+      <div class="card">
+        <div class="card-title">Heat Map</div>
+
+        <div class="row">
+          <select id="hmMarket" class="input"></select>
+          <select id="hmMetal" class="input">
+            <option value="silver">Silver</option>
+            <option value="gold">Gold</option>
+          </select>
+          <button id="btnHeatmap" class="btn">Refresh</button>
+        </div>
+
+        <div id="heatmapWrap" class="heatmap"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="panel" id="tab-settings">
+      <div class="card">
+        <div class="card-title">Settings</div>
+
+        <div class="grid2">
+          <div>
+            <div class="row">
+              <label class="label">Default Categories</label>
+            </div>
+            <div class="hint">
+              You can add/rename categories anytime. Examples: 40% halves, 90% junk, ASE, Generic 1oz rounds, 10oz bars,
+              Gold Eagles, Pre-33 $10, Fractional 1/10, Proof sets…
+            </div>
+
+            <div class="row">
+              <input id="catName" class="input" placeholder="New category name" />
+              <select id="catMetal" class="input">
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+              </select>
+              <button id="btnAddCategory" class="btn">Add</button>
+            </div>
+
+            <div id="categoriesList" class="list"></div>
+          </div>
+
+          <div>
+            <div class="row">
+              <label class="label">Assumed “Melt per Unit”</label>
+            </div>
+            <div class="hint">
+              Used to translate spot into melt/unit for arbitrage. Edit per category to match your reality.
+              Examples: 40% halves roll, 90% $1 face, ASE = 1.0 oz, 10oz bar = 10 oz, 1/10 eagle = 0.1 oz.
+            </div>
+
+            <div id="unitDefsList" class="list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span id="buildInfo"></span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
